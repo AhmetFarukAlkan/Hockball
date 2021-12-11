@@ -1,0 +1,527 @@
+import datetime
+import sys
+import pygame
+import math
+import tkinter
+import threading
+import time
+import pygame_gui
+import random
+from datetime import datetime
+
+pygame.init()
+
+COLOR_INACTIVE = pygame.Color('white')
+COLOR_ACTIVE = pygame.Color('white')
+FONT = pygame.font.SysFont(None, 32)
+
+class User:
+    usrName=""
+    userScore=0
+    userSuperPower=""
+    userSpeed=0.50
+    userX=float
+    userY=float
+    userRed=int
+    userGreen=int
+    userBlue=int
+    userSize=float(20)
+    defX=float
+    defY=float
+    supPowBeginTime = -99
+class Ball():
+    x = float
+    y = float
+    size = 10
+    red = 255
+    green = 255
+    blue = 255
+    default_speed = 1.9
+    default_driving_speed = 0.75
+    """default_speed = 1.9
+    default_driving_speed = 0.55"""
+    x_speed = 0
+    y_speed = 0
+    def_x =float
+    def_y = float
+class Screen:
+    scrnRed=0
+    scrnGreen=128
+    scrnBlue=0
+    scrnHeight=int
+    scrnWidth=int
+class Pitch :
+    LastGoalSide=1
+    Santra=True
+    GoalSize1=float
+    GoalSize2 = float
+    ptchName=""
+    ptchWidth=float(800)
+    ptchHeigth=float(500)
+    time=int
+class SuperPower():
+    PowerName = ""
+    suppowx = int
+    suppowy = int
+    size=int
+    usable = False
+
+User1 = User()
+User2 = User()
+ball = Ball()
+screen = Screen()
+pitch=Pitch()
+superPower=SuperPower()
+superPower.size=10
+root = tkinter.Tk()
+screen.scrnWidth = root.winfo_screenwidth()
+screen.scrnHeight = root.winfo_screenheight()
+ekran = pygame.display.set_mode((screen.scrnWidth,screen.scrnHeight-45),pygame.RESIZABLE)
+
+class InputBox:
+
+    def __init__(self, x, y, w, h, text=''):
+        self.rect = pygame.Rect(x, y, w, h)
+        self.color = COLOR_INACTIVE
+        self.text = text
+        self.txt_surface = FONT.render(text, True, (0,0,0))
+        self.active = False
+
+
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            # If the user clicked on the input_box rect.
+            if self.rect.collidepoint(event.pos):
+                # Toggle the active variable.
+                self.active = not self.active
+            else:
+                self.active = False
+            # Change the current color of the input box.
+            self.color = COLOR_ACTIVE if self.active else COLOR_INACTIVE
+        if event.type == pygame.KEYDOWN:
+            if self.active:
+                if event.key == pygame.K_BACKSPACE:
+                    self.text = self.text[:-1]
+                elif len(self.text)<15:
+                    self.text += event.unicode
+                # Re-render the text.
+                self.txt_surface = FONT.render(self.text, False,  (0,0,0))
+    def draw(self, screen):
+        # Blit the rect.
+        pygame.draw.rect(ekran, self.color, self.rect)
+        # Blit the text.
+        ekran.blit(self.txt_surface, (self.rect.x + 5, self.rect.y + 5))
+    def update(self):
+        # Resize the box if the text is too long.
+        width = max(200, self.txt_surface.get_width()+10)
+        self.rect.w = width
+
+User1.userRed=255
+User1.userGreen=0
+User1.userBlue=0
+User1.defX = (screen.scrnWidth-pitch.ptchWidth)/2 + pitch.ptchWidth/5
+User1.defY = screen.scrnHeight/2
+User1.usrName="User1"
+User1.userX = User1.defX
+User1.userY = User1.defY
+
+User2.userRed=0
+User2.userGreen=0
+User2.userBlue=255
+User2.defX = (screen.scrnWidth-pitch.ptchWidth)/2 + pitch.ptchWidth*(4/5)
+User2.defY = screen.scrnHeight/2
+User2.usrName="User2"
+User2.userX = User2.defX
+User2.userY = User2.defY
+
+ball.def_x = screen.scrnWidth/2
+ball.def_y = screen.scrnHeight/2
+
+class saha:
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+
+    def draw(self):
+        white = (255, 255, 255)
+        aPos = ((screen.scrnWidth - self.width) / 2, (screen.scrnHeight - self.height) / 2)
+        bPos = (((screen.scrnWidth - self.width) / 2) + self.width, (screen.scrnHeight - self.height) / 2)
+        cPos = (((screen.scrnWidth - self.width) / 2) + self.width, ((screen.scrnHeight - self.height) / 2) + self.height)
+        dPos = ((screen.scrnWidth - self.width) / 2, ((screen.scrnHeight - self.height) / 2) + self.height)
+        aUstKalePos = ((screen.scrnWidth - self.width) / 2, ((screen.scrnHeight - self.height) / 2) + self.height / 3)
+        aaUstKalePos = (((screen.scrnWidth - self.width) / 2) - 50, ((screen.scrnHeight - self.height) / 2) + self.height / 3)
+        aAltKalePos = ((screen.scrnWidth - self.width) / 2, ((screen.scrnHeight - self.height) / 2) + self.height / 3*2)
+        aaAltKalePos = (((screen.scrnWidth - self.width) / 2) - 50, ((screen.scrnHeight - self.height) / 2) + self.height / 3*2)
+        bUstKalePos = (((screen.scrnWidth - self.width) / 2) + self.width, ((screen.scrnHeight - self.height) / 2) + self.height / 3)
+        baUstKalePos = (((screen.scrnWidth - self.width) / 2) + self.width + 50, ((screen.scrnHeight - self.height) / 2) + self.height / 3)
+        bAltKalePos = (((screen.scrnWidth - self.width) / 2) + self.width, ((screen.scrnHeight - self.height) / 2) + self.height / 3*2)
+        baAltKalePos = (((screen.scrnWidth - self.width) / 2) + self.width + 50,((screen.scrnHeight - self.height) / 2) + self.height / 3*2)
+        aCenterPos = (((screen.scrnWidth - self.width) / 2) + (self.width / 2), (screen.scrnHeight - self.height) / 2)
+        bCenterPos = (((screen.scrnWidth - self.width) / 2) + (self.width / 2), ((screen.scrnHeight - self.height) / 2) + self.height)
+        cCenterPos = (((screen.scrnWidth - self.width) / 2) + (self.width / 2) + 1, ((screen.scrnHeight - self.height) / 2) + (self.height / 2))
+        pygame.draw.line(ekran, white, aPos, bPos, 2)
+        pygame.draw.line(ekran, white, bPos, cPos, 2)
+        pygame.draw.line(ekran, white, cPos, dPos, 2)
+        pygame.draw.line(ekran, white, dPos, aPos, 2)
+        pygame.draw.line(ekran, white, aCenterPos, bCenterPos, 2)
+        pygame.draw.circle(ekran, white, cCenterPos, self.height / 10, 2)
+        pygame.draw.line(ekran, white, aUstKalePos, aaUstKalePos, 2)
+        pygame.draw.line(ekran, white, aAltKalePos, aaAltKalePos, 2)
+        pygame.draw.line(ekran, white, aaAltKalePos, aaUstKalePos, 2)
+
+        pygame.draw.line(ekran, white, bUstKalePos, baUstKalePos, 2)
+        pygame.draw.line(ekran, white, bAltKalePos, baAltKalePos, 2)
+        pygame.draw.line(ekran, white, baAltKalePos, baUstKalePos, 2)
+
+saha1 = saha(pitch.ptchWidth,pitch.ptchHeigth)
+
+ball.x = screen.scrnWidth/2
+ball.y = screen.scrnHeight/2
+
+def Distacnce(x1,y1,x2,y2):
+    return float(math.pow((math.pow((x1-x2),2)+math.pow((y1-y2),2)),1/2))
+def ballMoves():
+    keys = pygame.key.get_pressed()
+
+    if (ball.x + ball.size > (screen.scrnWidth + pitch.ptchWidth) / 2 and ball.x_speed > 0 and (
+            ball.y < ((screen.scrnHeight - pitch.ptchHeigth) / 2 + pitch.ptchHeigth * (1 / 3))
+            or ball.y > ((screen.scrnHeight - pitch.ptchHeigth) / 2 + pitch.ptchHeigth * (2 / 3)))):
+        ball.x_speed *= -1
+
+    if (ball.x + ball.size > (screen.scrnWidth+pitch.ptchWidth) / 2 and ball.x_speed > 0):
+        if (ball.x + ball.size > (screen.scrnWidth + pitch.ptchWidth) / 2 + 60):
+            ball.x_speed *= -1
+        if ball.y + ball.size < (screen.scrnHeight - pitch.ptchHeigth)/2 + pitch.ptchHeigth*(1/3) and ball.y_speed < 0:
+            ball.y_speed *= -1
+        if ball.y - ball.size > (screen.scrnHeight - pitch.ptchHeigth)/2 + pitch.ptchHeigth*(2/3) and ball.y_speed > 0:
+            ball.y_speed *= -1
+
+
+    if (ball.x - ball.size < (screen.scrnWidth - pitch.ptchWidth) / 2 and ball.x_speed < 0 and (
+            ball.y < ((screen.scrnHeight - pitch.ptchHeigth) / 2 + pitch.ptchHeigth * (1 / 3))
+            or ball.y > ((screen.scrnHeight - pitch.ptchHeigth) / 2 + pitch.ptchHeigth * (2 / 3)))):
+        ball.x_speed *= -1
+
+    if (ball.x - ball.size < (screen.scrnWidth-pitch.ptchWidth) / 2 and ball.x_speed < 0):
+        if (ball.x - ball.size < (screen.scrnWidth - pitch.ptchWidth) / 2 - 60):
+            ball.x_speed *= -1
+        if ball.y - ball.size < (screen.scrnHeight - pitch.ptchHeigth)/2 + pitch.ptchHeigth*(1/3) and ball.y_speed < 0:
+            ball.y_speed *= -1
+        if ball.y + ball.size > (screen.scrnHeight - pitch.ptchHeigth)/2 + pitch.ptchHeigth*(2/3) and ball.y_speed > 0:
+            ball.y_speed *= -1
+
+    if ball.y + ball.size > (screen.scrnHeight+pitch.ptchHeigth)/2 and ball.y_speed > 0:
+        ball.y_speed *= -1
+    if ball.y - ball.size < (screen.scrnHeight-pitch.ptchHeigth)/2 and ball.y_speed < 0:
+        ball.y_speed *= -1
+
+    if Distacnce(ball.x,ball.y,User1.userX,User1.userY) < ball.size+User1.userSize+4 and keys[pygame.K_SPACE]:
+        pitch.Santra=False
+        ball.x_speed=(ball.x-User1.userX)*ball.default_speed/(User1.userSize+ball.size)
+        ball.y_speed=(ball.y-User1.userY)*ball.default_speed/(User1.userSize+ball.size)
+    elif Distacnce(ball.x,ball.y,User1.userX,User1.userY) < User1.userSize+ball.size:
+        pitch.Santra = False
+        ball.x_speed = (ball.x-User1.userX)*ball.default_driving_speed/(User1.userSize+ball.size)
+        ball.y_speed = (ball.y - User1.userY) * ball.default_driving_speed /(User1.userSize+ball.size)
+
+    if Distacnce(ball.x,ball.y,User2.userX,User2.userY)<ball.size+User2.userSize+4 and keys[pygame.K_KP_2]:
+        pitch.Santra = False
+        ball.x_speed=(ball.x-User2.userX)*ball.default_speed/(User2.userSize+ball.size)
+        ball.y_speed=(ball.y-User2.userY)*ball.default_speed/(User2.userSize+ball.size)
+    elif Distacnce(ball.x,ball.y,User2.userX,User2.userY)<User2.userSize+ball.size:
+        pitch.Santra = False
+        ball.x_speed = (ball.x-User2.userX) * ball.default_driving_speed/(User2.userSize+ball.size)
+        ball.y_speed = (ball.y - User2.userY) * ball.default_driving_speed /(User2.userSize+ball.size)
+    ball.x += ball.x_speed
+    ball.y += ball.y_speed
+    pygame.draw.circle(ekran, (ball.red, ball.green, ball.blue), (ball.x, ball.y),ball.size)
+    ball.x_speed = ball.x_speed * 0.995
+    ball.y_speed = ball.y_speed * 0.995
+def playerMoves():
+    key = pygame.key.get_pressed()
+    if key[pygame.K_a] and User1.userX - User1.userSize > (screen.scrnWidth - pitch.ptchWidth) / 2:
+        User1.userX -= User1.userSpeed
+    if key[pygame.K_d] and User1.userX + User1.userSize < (screen.scrnWidth + pitch.ptchWidth) / 2 and ((pitch.Santra and User1.userX < (screen.scrnWidth - pitch.ptchWidth) / 2 + pitch.ptchWidth / 2
+            and Distacnce(ball.x, ball.y, User1.userX+User1.userSpeed,User1.userY) > pitch.ptchHeigth / 10 and pitch.LastGoalSide == 1) or pitch.Santra == False
+            or (pitch.Santra and pitch.LastGoalSide == 2 and User1.userX < (screen.scrnWidth - pitch.ptchWidth) / 2 + pitch.ptchWidth / 2)):
+            User1.userX += User1.userSpeed
+
+    if key[pygame.K_s] and User1.userY + User1.userSize < (screen.scrnHeight + pitch.ptchHeigth) / 2:
+        if (pitch.Santra and Distacnce(ball.x, ball.y, User1.userX,User1.userY + User1.userSpeed) > pitch.ptchHeigth / 10 and pitch.LastGoalSide == 1) or pitch.Santra == False or (pitch.Santra and pitch.LastGoalSide == 2 ):
+            User1.userY += User1.userSpeed
+    if key[pygame.K_w] and User1.userY - User1.userSize > (screen.scrnHeight - pitch.ptchHeigth) / 2:
+        if (pitch.Santra and Distacnce(ball.x, ball.y, User1.userX-User1.userSpeed,User1.userY) > pitch.ptchHeigth / 10 and pitch.LastGoalSide == 1) or pitch.Santra == False or (pitch.Santra and pitch.LastGoalSide == 2 ):
+            User1.userY -= User1.userSpeed
+    pygame.draw.circle(ekran, (User1.userRed, User1.userGreen, User1.userBlue), (User1.userX, User1.userY), User1.userSize)
+
+
+    if key[pygame.K_LEFT] and User2.userX - User2.userSize>(screen.scrnWidth-pitch.ptchWidth)/2 and ((pitch.Santra and
+        User2.userX > (screen.scrnWidth - pitch.ptchWidth) / 2 + pitch.ptchWidth / 2 and Distacnce(ball.x, ball.y, User2.userX - User2.userSpeed,User2.userY) > pitch.ptchHeigth / 10
+        and pitch.LastGoalSide == 2) or pitch.Santra == False or (pitch.Santra and pitch.LastGoalSide == 1 and pitch.Santra and User2.userX > (screen.scrnWidth - pitch.ptchWidth) / 2 + pitch.ptchWidth / 2)):
+            User2.userX -= User2.userSpeed
+
+    if key[pygame.K_RIGHT] and User2.userX + User2.userSize<(screen.scrnWidth+pitch.ptchWidth)/2:
+        User2.userX += User2.userSpeed
+
+    if key[pygame.K_DOWN] and User2.userY + User2.userSize<(screen.scrnHeight+pitch.ptchHeigth)/2 and ((pitch.Santra and Distacnce(ball.x, ball.y, User2.userX,User2.userY + User2.userSpeed) > pitch.ptchHeigth / 10 and pitch.LastGoalSide == 2) or pitch.Santra == False or (pitch.Santra and pitch.LastGoalSide == 1 )):
+            User2.userY += User2.userSpeed
+    if key[pygame.K_UP] and User2.userY - User2.userSize>(screen.scrnHeight-pitch.ptchHeigth)/2 and ((pitch.Santra and Distacnce(ball.x, ball.y, User2.userX,User2.userY - User2.userSpeed) > pitch.ptchHeigth / 10 and pitch.LastGoalSide == 2) or pitch.Santra == False or (pitch.Santra and pitch.LastGoalSide == 1 )):
+            User2.userY -= User2.userSpeed
+    pygame.draw.circle(ekran,(User2.userRed,User2.userGreen,User2.userBlue),(User2.userX,User2.userY),User2.userSize)
+def restart():
+    User1.userY = User1.defY
+    User1.userX = User1.defX
+    User2.userY = User2.defY
+    User2.userX = User2.defX
+
+    ball.x = ball.def_x
+    ball.y = ball.def_y
+    ball.x_speed = 0
+    ball.y_speed = 0
+booltime = True
+def time():
+    global booltime, t
+    if booltime:
+        t = datetime.now()
+        booltime = False
+    if booltime==False:
+        dt = datetime.now()
+        FONT = pygame.font.SysFont(None, 48)
+        pitch.time = (dt-t).seconds
+        second = FONT.render("{}".format(pitch.time % 60),1,(255,255,255))
+        minute = FONT.render("{}:".format(pitch.time//60),1,(255,255,255))
+        ekran.blit(minute,((screen.scrnWidth/2-minute.get_width()+5, (screen.scrnHeight - pitch.ptchHeigth) /2.8)))
+        ekran.blit(second,((screen.scrnWidth/2+second.get_width()/4 , (screen.scrnHeight - pitch.ptchHeigth) /2.8)))
+        """if pitch.time % 60 < 10:
+                        timeBoard = FONT.render("%d : 0%d"%(pitch.time//60,pitch.time % 60),1,(255,255,255))
+                    else:
+                        timeBoard = FONT.render("  %d : %d" % (pitch.time // 60, pitch.time % 60), 1, (255, 255, 255))
+                    ekran.blit(timeBoard,((screen.scrnWidth/2-16*len("{} ".format(pitch.time % 60)) , (screen.scrnHeight - pitch.ptchHeigth) /2.8)))"""
+
+timeA = True
+timeC = False
+def goal():
+    global timeA, c, timeC
+    b = datetime.now()
+    if ball.x + ball.size < (screen.scrnWidth - pitch.ptchWidth)/2 or ball.x - ball.size > (screen.scrnWidth + pitch.ptchWidth)/2 and ball.y > (screen.scrnHeight-pitch.ptchHeigth)/2 + pitch.ptchHeigth*(1/3) and ball.y < (screen.scrnHeight-pitch.ptchHeigth)/2 + pitch.ptchHeigth*(2/3):
+        pitch.Santra=True
+        if timeA:
+            a = datetime.now()
+            c = a
+            timeC = True
+            timeA = False
+    if timeC and (b - c).seconds > 0.1:
+        if ball.x + ball.size < screen.scrnWidth/2 :
+            User2.userScore +=1
+            pitch.LastGoalSide=2
+        elif ball.x - ball.size > screen.scrnWidth/2:
+            User1.userScore += 1
+            pitch.LastGoalSide = 1
+        timeC = False
+        timeA = True
+        restart()
+    FONT = pygame.font.SysFont(None, 48)
+    score1 = "{} {} |".format(User1.usrName, User1.userScore)
+    score2 = "{} {}".format( User2.userScore, User2.usrName)
+    usr1Score = FONT.render(score1,1,(255,255,255))
+    usr2Score = FONT.render(score2, 1, (255, 255, 255))
+    ekran.blit(usr1Score,(screen.scrnWidth/2-usr1Score.get_width()+5,(screen.scrnHeight - pitch.ptchHeigth) / 4))
+    ekran.blit(usr2Score,(screen.scrnWidth/2+10,(screen.scrnHeight - pitch.ptchHeigth) / 4))
+    """board = ("{} {} | {} {}").format(User1.usrName, User1.userScore, User2.userScore, User2.usrName)
+    scoreboard = score.render(board, 1,(255, 255, 255))
+    ekran.blit(scoreboard,(screen.scrnWidth/2 - 19 * len(User1.usrName+" "+str(User1.userScore)) , (screen.scrnHeight - pitch.ptchHeigth) / 4))"""
+def superPowerSelection():
+    #powers=['fireball','iceball','smallergoal','biggergoal','biggerball','smallerball','unstoppebleball']
+    powers = ['fireball', 'iceball', 'biggerball', 'smallerball']
+    #powers = ['fireball']
+    if pitch.time % 30 == 0 and superPower.usable == False:
+        superPower.usable = True
+        superPower.PowerName = random.choice(powers)
+        superPower.suppowx = random.randint((screen.scrnWidth-pitch.ptchWidth)/2+int(pitch.ptchWidth/3),(screen.scrnWidth+pitch.ptchWidth)/2-int(pitch.ptchWidth/3))
+        superPower.suppowy = random.randint((screen.scrnHeight-pitch.ptchHeigth)/2,(screen.scrnHeight+pitch.ptchHeigth)/2)
+    elif superPower.usable:
+        pygame.draw.circle(ekran, (0, 0, 0), (superPower.suppowx, superPower.suppowy), superPower.size)
+
+def runSuperPower():
+    if Distacnce(superPower.suppowx,superPower.suppowy,User1.userX,User1.userY) < superPower.size + User1.userSize and superPower.usable:
+        User1.supPowBeginTime = pitch.time
+        User1.userSuperPower = superPower.PowerName
+        superPower.usable = False
+    if Distacnce(superPower.suppowx,superPower.suppowy,User2.userX,User2.userY) < superPower.size + User2.userSize and superPower.usable:
+        User2.supPowBeginTime = pitch.time
+        User2.userSuperPower = superPower.PowerName
+        superPower.usable = False
+
+    if (User1.userSuperPower == "biggerball" or User2.userSuperPower == "biggerball"):
+        if pitch.time - User1.supPowBeginTime == 20 or pitch.time - User2.supPowBeginTime == 20:
+            ball.size = 10
+            if pitch.time - User1.supPowBeginTime == 20:
+                User1.userSuperPower=""
+            if pitch.time - User2.supPowBeginTime == 20:
+                User2.userSuperPower = ""
+        else:
+            ball.size = 15
+    elif (User1.userSuperPower != "smallerball" and User2.userSuperPower != "smallerball") :
+        ball.size = 10
+
+    if (User1.userSuperPower == "smallerball" or User2.userSuperPower == "smallerball"):
+        if pitch.time - User1.supPowBeginTime == 20 or pitch.time - User2.supPowBeginTime == 20:
+            ball.size = 10
+            if pitch.time - User1.supPowBeginTime == 20:
+                User1.userSuperPower = ""
+            if pitch.time - User2.supPowBeginTime == 20:
+                User2.userSuperPower = ""
+        else:
+            ball.size = 5
+    elif (User1.userSuperPower != "biggerball" and User2.userSuperPower != "biggerball"):
+        ball.size = 10
+
+    if (User1.userSuperPower == "fireball" or User2.userSuperPower == "fireball"):
+        if pitch.time - User1.supPowBeginTime == 10 or pitch.time - User2.supPowBeginTime == 10:
+            ball.default_speed = 1.9
+            ball.default_driving_speed = 0.75
+            ball.red = 255
+            ball.green = 255
+            ball.blue = 255
+            if pitch.time - User1.supPowBeginTime == 10:
+                User1.userSuperPower = ""
+            if pitch.time - User2.supPowBeginTime == 10:
+                User2.userSuperPower = ""
+        else:
+            if Distacnce(ball.x,ball.y,User1.userX,User1.userY) < ball.size + User1.userSize+5 and User1.userSuperPower == "fireball":
+                print("1")
+                ball.default_speed = 4
+                ball.default_driving_speed = 0.75
+                ball.red = 255
+                ball.green = 100
+                ball.blue = 100
+            elif (Distacnce(ball.x,ball.y,User2.userX,User2.userY) < ball.size + User2.userSize+5 and User2.userSuperPower != "fireball"):
+                print("2")
+                ball.default_speed = 1.9
+                ball.default_driving_speed = 0.75
+                ball.red = 255
+                ball.green = 255
+                ball.blue = 255
+            if Distacnce(ball.x,ball.y,User2.userX,User2.userY) < ball.size + User2.userSize+5 and User2.userSuperPower == "fireball":
+                print("3")
+                ball.default_speed = 4
+                ball.default_driving_speed = 0.75
+                ball.red = 255
+                ball.green = 100
+                ball.blue = 100
+            elif (Distacnce(ball.x, ball.y, User1.userX,User1.userY) < ball.size + User1.userSize+5 and User1.userSuperPower != "fireball"):
+                print("4")
+                ball.default_speed = 1.9
+                ball.default_driving_speed = 0.75
+                ball.red = 255
+                ball.green = 255
+                ball.blue = 255
+    elif (User1.userSuperPower != "iceball" and User2.userSuperPower != "iceball"):
+        ball.default_speed = 1.9
+        ball.default_driving_speed = 0.75
+        ball.red = 255
+        ball.green = 255
+        ball.blue = 255
+
+    if (User1.userSuperPower == "iceball" or User2.userSuperPower == "iceball"):
+        if pitch.time - User1.supPowBeginTime == 7 or pitch.time - User2.supPowBeginTime == 7:
+            ball.default_speed = 1.9
+            ball.default_driving_speed = 0.75
+            ball.red = 255
+            ball.green = 255
+            ball.blue = 255
+            if pitch.time - User1.supPowBeginTime == 7:
+                User1.userSuperPower = ""
+            if pitch.time - User2.supPowBeginTime == 7:
+                User2.userSuperPower = ""
+        else:
+            ball.x_speed = 0
+            ball.y_speed = 0
+            ball.red = 100
+            ball.green = 100
+            ball.blue = 255
+    elif (User1.userSuperPower != "fireball" and User2.userSuperPower != "fireball"):
+        ball.default_speed = 1.9
+        ball.default_driving_speed = 0.75
+        ball.red = 255
+        ball.green = 255
+        ball.blue = 255
+
+    FONT = pygame.font.SysFont(None, 32)
+    if User1.userSuperPower == "":
+        User1WritePower = FONT.render(("{} has nothing".format(User1.usrName)), 1, (255, 255, 255))
+        ekran.blit(User1WritePower,((screen.scrnWidth-pitch.ptchWidth)/2,(screen.scrnHeight+pitch.ptchHeigth)/2 + 10))
+    else:
+        User1WritePower = FONT.render("{} has {}".format(User1.usrName, User1.userSuperPower), 1, (255, 255, 255))
+        ekran.blit(User1WritePower, ((screen.scrnWidth - pitch.ptchWidth) / 2,(screen.scrnHeight + pitch.ptchHeigth) / 2 + 10))
+    if User2.userSuperPower == "":
+        User2WritePower = FONT.render(("{} has nothing".format(User2.usrName)), 1, (255, 255, 255))
+        ekran.blit(User2WritePower,((screen.scrnWidth) / 2, (screen.scrnHeight + pitch.ptchHeigth) / 2 + 10))
+    else:
+        User2WritePower = FONT.render("{} has {}".format(User2.usrName, User2.userSuperPower), 1, (255, 255, 255))
+        ekran.blit(User2WritePower,((screen.scrnWidth) / 2, (screen.scrnHeight + pitch.ptchHeigth) / 2 + 10))
+def game():
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+
+        ekran.fill((screen.scrnRed, screen.scrnGreen, screen.scrnBlue))
+        threading.Thread(target=saha1.draw()).start()
+        threading.Thread(target=playerMoves()).start()
+        threading.Thread(target=ballMoves()).start()
+        threading.Thread(target=goal()).start()
+        threading.Thread(target=time()).start()
+        threading.Thread(target=superPowerSelection()).start()
+        threading.Thread(target=runSuperPower()).start()
+        pygame.display.update()
+
+manager = pygame_gui.UIManager((screen.scrnWidth, screen.scrnHeight))
+button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((screen.scrnWidth/2-25, screen.scrnHeight/2+160), (100, 50)),text='Oyna',manager=manager)
+clock = pygame.time.Clock()
+def entry():
+    key = pygame.key.get_pressed()
+    ekran.fill((screen.scrnRed, screen.scrnGreen, screen.scrnBlue))
+    FONT = pygame.font.SysFont(None,24)
+    nickname1 = FONT.render("Kullanıcı 1 Nickname", 1, (255, 255, 255))
+    ekran.blit(nickname1,(screen.scrnWidth/2-70,screen.scrnHeight/2-100))
+    input_box1 = InputBox(screen.scrnWidth/2-70, screen.scrnHeight/2-72, 140, 32)
+    nickname2 = FONT.render("Kullanıcı 2 Nickname", 1, (255, 255, 255))
+    ekran.blit(nickname2, (screen.scrnWidth / 2 - 70, screen.scrnHeight / 2 + 45))
+    input_box2 = InputBox(screen.scrnWidth/2-70, screen.scrnHeight/2+72, 140, 32)
+    input_boxes = [input_box1, input_box2]
+
+    time_delta = clock.tick(60) / 1000.0
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+
+            for box in input_boxes:
+                box.handle_event(event)
+
+            if event.type == pygame.USEREVENT:
+                if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+                    if event.ui_element == button :
+                        if len(input_box1.text)!=0:
+                            User1.usrName=input_box1.text
+                        else:
+                            User1.usrName="User1"
+                        if len(input_box2.text)!=0:
+                            User2.usrName = input_box2.text
+                        else:
+                            User2.usrName="User2"
+
+                        game()
+            manager.process_events(event)
+
+        for box in input_boxes:
+            box.draw(screen)
+        for box in input_boxes:
+            box.update()
+        manager.update(time_delta)
+        manager.draw_ui(ekran)
+        pygame.display.update()
+
+entry()
+game()
